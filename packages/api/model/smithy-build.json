@@ -9,6 +9,14 @@
         }
       }
     },
+    "ts-server": {
+      "plugins": {
+        "typescript-ssdk-codegen": {
+          "package": "smithy-ts-server",
+          "packageVersion": "0.0.1"
+        }
+      }
+    },
     "openapi": {
       "plugins": {
         "openapi": {
@@ -24,7 +32,8 @@
       "software.amazon.smithy:smithy-model:1.28.0",
       "software.amazon.smithy:smithy-openapi:1.28.0",
       "software.amazon.smithy:smithy-aws-traits:1.28.0",
-      "software.amazon.smithy.typescript:smithy-aws-typescript-codegen:0.12.0"
+      "software.amazon.smithy.typescript:smithy-aws-typescript-codegen:0.12.0",
+      "software.amazon.smithy:smithy-validation-model:1.28.0"
     ],
     "repositories": [
       {

@@ -1,4 +1,4 @@
-import { MyApi } from 'smithy-ts-client';
+import { ApiError, MyApi } from "smithy-ts-client";
 
 void (async () => {
   const api = new MyApi({
@@ -11,7 +11,11 @@ void (async () => {
     });
     console.log('response', res);
   } catch (e) {
-    console.error(e);
+    if (e instanceof ApiError) {
+      console.error('The error message is', e.errorMessage);
+    } else {
+      console.error('Unexpected error', e);
+    }
   }
 
 })();

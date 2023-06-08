@@ -14,7 +14,10 @@ export class MyStack extends Stack {
       integrations: {
         sayHello: {
           integration: Integrations.lambda(new NodejsFunction(this, 'SayHelloLambda', {
-            entry: path.join(__dirname, 'say-hello.ts'),
+            entry: path.join(__dirname, 'say-hello-tsssdk.ts'),
+            bundling: {
+              nodeModules: ['re2-wasm'],
+            },
           })),
         },
       },

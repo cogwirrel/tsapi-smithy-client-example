@@ -45,10 +45,19 @@ const api = new TypeSafeApiProject({
                 },
               },
             },
+            "ts-server" : {
+              "plugins": {
+                "typescript-ssdk-codegen" : {
+                  "package" : "smithy-ts-server",
+                  "packageVersion": "0.0.1"
+                }
+              }
+            },
           },
           maven: {
             dependencies: [
               "software.amazon.smithy.typescript:smithy-aws-typescript-codegen:0.12.0",
+              "software.amazon.smithy:smithy-validation-model:1.28.0",
             ],
           },
         },
@@ -142,6 +151,67 @@ smithyClient.preCompileTask.exec(
 );
 smithyClient.gitignore.addPatterns("src");
 
+
+const smithyServerSdk = new TypeScriptProject({
+  parent: monorepo,
+  outdir: "packages/smithy-ts-server",
+  name: "smithy-ts-server",
+  defaultReleaseBranch: "main",
+  sampleCode: false,
+  deps: [
+    "tslib",
+    "@aws-crypto/sha256-browser@2.0.0",
+    "@aws-crypto/sha256-js@2.0.0",
+    "@aws-sdk/config-resolver@3.171.0",
+    "@aws-sdk/fetch-http-handler@3.171.0",
+    "@aws-sdk/hash-node@3.171.0",
+    "@aws-sdk/invalid-dependency@3.171.0",
+    "@aws-sdk/middleware-content-length@3.171.0",
+    "@aws-sdk/middleware-retry@3.171.0",
+    "@aws-sdk/middleware-serde@3.171.0",
+    "@aws-sdk/middleware-stack@3.171.0",
+    "@aws-sdk/node-http-handler@3.171.0",
+    "@aws-sdk/protocol-http@3.171.0",
+    "@aws-sdk/smithy-client@3.171.0",
+    "@aws-sdk/types@3.171.0",
+    "@aws-sdk/url-parser@3.171.0",
+    "@aws-sdk/util-base64-browser@3.170.0",
+    "@aws-sdk/util-base64-node@3.170.0",
+    "@aws-sdk/util-body-length-browser@3.170.0",
+    "@aws-sdk/util-body-length-node@3.170.0",
+    "@aws-sdk/util-defaults-mode-browser@3.171.0",
+    "@aws-sdk/util-defaults-mode-node@3.171.0",
+    "@aws-sdk/util-utf8-browser@3.170.0",
+    "@aws-sdk/util-utf8-node@3.170.0",
+    "@aws-smithy/server-common@1.0.0-alpha.6",
+  ],
+  eslint: false,
+  tsconfig: {
+    compilerOptions: {
+      lib: ["dom", "es2019"],
+      noUnusedParameters: false,
+      noUnusedLocals: false,
+      noImplicitReturns: false,
+    },
+  },
+});
+
+// Make sure smithy client builds after model
+monorepo.addImplicitDependency(smithyServerSdk, api.model);
+smithyServerSdk.preCompileTask.exec("rm -rf src");
+smithyServerSdk.preCompileTask.exec(
+  `cp -r ${path.join(
+    path.relative(smithyServerSdk.outdir, api.model.outdir),
+    "build",
+    "smithyprojections",
+    "myapi-model",
+    "ts-server",
+    "typescript-ssdk-codegen",
+    "src"
+  )} src`
+);
+smithyServerSdk.gitignore.addPatterns("src");
+
 new TypeScriptProject({
   parent: monorepo,
   name: "caller-example",
@@ -165,7 +235,15 @@ const infra = new AwsCdkTypeScriptApp({
   parent: monorepo,
   outdir: "packages/infra",
   name: "myinfra",
-  deps: ["@aws-prototyping-sdk/type-safe-api"],
+  deps: [
+    "@aws-prototyping-sdk/type-safe-api",
+    smithyServerSdk.package.packageName,
+    "@aws-smithy/server-common@1.0.0-alpha.6",
+    "@aws-smithy/server-apigateway@1.0.0-alpha.6",
+  ],
+  devDeps: [
+    "@types/aws-lambda",
+  ],
 });
 
 // Infrastructure can depend on the generated API infrastructure and runtime

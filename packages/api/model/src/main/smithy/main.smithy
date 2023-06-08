@@ -3,6 +3,7 @@ namespace com.my.company
 
 use aws.auth#sigv4
 use aws.protocols#restJson1
+use smithy.framework#ValidationException
 
 /// A sample smithy api
 @restJson1
@@ -10,6 +11,7 @@ use aws.protocols#restJson1
 service MyApi {
     version: "1.0"
     operations: [SayHello]
+    errors: [ValidationException]
 }
 
 @readonly
